@@ -297,7 +297,9 @@ class RecurrencePlot:
             elif metric == "supremum":
                 self._distance_matrix = \
                     RecurrencePlot.supremum_distance_matrix(self, embedding)
-
+            elif metric == "pearson":
+                self._distance_matrix = \
+                    RecurrencePlot.pearson_distance_matrix(self,embedding)
             self._distance_matrix_cached = True
 
         return self._distance_matrix
@@ -530,7 +532,26 @@ class RecurrencePlot:
     #
     #  Calculate recurrence plot
     #
+    def pearson_distance_matrix(self, embedding):
+        """
+        Return the manhattan distance matrix from an embedding of a time
+        series.
 
+        :type embedding: 2D array (time, embedding dimension)
+        :arg embedding: The phase space trajectory.
+        :rtype: 2D square array ("float32")
+        :return: the manhattan distance matrix.
+        """
+        if self.silence_level <= 1:
+            print("Calculating the manhattan distance matrix...")
+
+        (n_time, dim) = embedding.shape
+        distance = np.zeros((n_time, n_time), dtype=FIELD)
+
+        _pearson_distance_matrix_rp(n_time, dim, to_cy(embedding, FIELD),
+                                      distance)
+        return distance
+    
     def manhattan_distance_matrix(self, embedding):
         """
         Return the manhattan distance matrix from an embedding of a time
