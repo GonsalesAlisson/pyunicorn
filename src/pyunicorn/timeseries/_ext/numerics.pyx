@@ -268,8 +268,8 @@ def _twin_surrogates_s(int n_surrogates, int N, twins,
             j += 1
 
     return surrogates
-
-
+    
+    
 def _test_pearson_correlation(
     np.ndarray[DFIELD_t, ndim=2, mode='c'] original_data not None,
     np.ndarray[DFIELD_t, ndim=2, mode='c'] surrogates not None,
@@ -355,7 +355,30 @@ def _embed_time_series(
             embedding[k, j] = time_series[index]
             index += 1
 
+def _pearson_distance_matrix_rp(
+    int n_time, int dim, np.ndarray[FIELD_t, ndim=2] embedding,
+    np.ndarray[FIELD_t, ndim=2] distance):
+    
+    cdef:
+        unsigned int j, k, l, T = n_time, D = dim
+        DFIELD_t norm = 1.0 / float(n_time)
+        #  Initialize Pearson correlation matrix
+        np.ndarray[FIELD_t, ndim=2, mode='c'] correlation = np.zeros(
+            (T, T), dtype=FIELD)
+        
 
+    # Calculate the pearson distance matrix
+    _test_pearson_correlation_fast(
+        <double*> np.PyArray_DATA(embedding),
+        <double*> np.PyArray_DATA(embedding),
+        <float*> np.PyArray_DATA(correlation),
+        n_time, N, norm)
+    
+   for j in range(T):
+    for k in range(j):
+        distance[j,k] = distance[k,j] = 1 - abs(correlation[k,j])
+       
+    
 def _manhattan_distance_matrix_rp(
     int n_time, int dim, np.ndarray[FIELD_t, ndim=2] embedding,
     np.ndarray[FIELD_t, ndim=2] distance):
